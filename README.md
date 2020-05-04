@@ -1,5 +1,8 @@
 # JceKt
-Java Cryptography Extension (JCE) support for kotlinx.serialization
+JCE protocol support for kotlinx.serialization
+
+## What is JCE?
+See https://blog.csdn.net/jiange_zh/article/details/86562232
 
 ### Dependencies
 - [kotlinx-io](https://github.com/kotlin/kotlinx-io)
