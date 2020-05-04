@@ -1,7 +1,7 @@
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
-def vcs = "https://github.com/mamoe/konfig"
+def vcs = "https://github.com/him188/jcekt"
 
 def pomConfig = {
     licenses {
@@ -13,9 +13,9 @@ def pomConfig = {
     }
     developers {
         developer {
-            id "mamoe"
-            name "Mamoe Technologies"
-            email "support@mamoe.net"
+            id "him188"
+            name "Him188"
+            email "him188@mamoe.net"
         }
     }
     scm {
@@ -32,8 +32,8 @@ bintray {
     version = project.version
 
     pkg {
-        repo = 'konfig'
-        name = "konfig"
+        repo = 'jcekt'
+        name = "jcekt"
         licenses = ['Apache-2.0']
         vcsUrl = vcs
     }
