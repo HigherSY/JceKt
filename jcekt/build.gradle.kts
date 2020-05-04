@@ -24,6 +24,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
+                api(kotlinx("io", Versions.Kotlin.io))
             }
         }
 
@@ -31,6 +32,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib"))
                 api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("io-jvm", Versions.Kotlin.io))
             }
         }
 
@@ -38,6 +40,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-js"))
                 api(kotlinx("serialization-runtime-js", Versions.Kotlin.serialization))
+                api(kotlinx("io-js", Versions.Kotlin.io))
             }
         }
 

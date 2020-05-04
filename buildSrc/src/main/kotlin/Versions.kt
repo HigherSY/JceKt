@@ -1,6 +1,6 @@
 object Versions {
     object JceKt {
-        const val version = "0.1.0"
+        const val version = "1.0.0"
     }
 
     object Kotlin {
