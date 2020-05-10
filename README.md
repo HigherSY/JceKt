@@ -1,7 +1,7 @@
 # JceKt
 JCE protocol support for kotlinx.serialization
 
-## What is JCE?
+### What is JCE?
 See https://blog.csdn.net/jiange_zh/article/details/86562232
 
 ### Dependencies
@@ -9,6 +9,43 @@ See https://blog.csdn.net/jiange_zh/article/details/86562232
 - [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization)
 
 ### Quick start
+
+Latest stable version is `1.0.0`.
+
+#### Gradle
+Replace `<version>` with the newest version here: [![Download](https://api.bintray.com/packages/him188moe/jcekt/jcekt/images/download.svg)](https://bintray.com/him188moe/jcekt/jcekt/)
+
+```kotlin
+repositories {
+  jcenter()
+}
+```
+
+```kotlin
+dependencies {
+  implementation("moe.him188:jcekt:<version>")
+}
+```
+
+
+#### Maven
+Replace `$version` with the newest version here: [![Download](https://api.bintray.com/packages/him188moe/jcekt/jcekt/images/download.svg)](https://bintray.com/him188moe/jcekt/jcekt/)
+
+```xml
+<repository>
+    <name>jcenter</name>
+    <url>https://jcenter.bintray.com/</url>
+</repository>
+```
+```xml
+<dependency>
+    <groupId>moe.him188</groupId>
+    <artifactId>jcekt</artifactId>
+    <version>$version</version>
+</dependency>
+```
+
+
 
 ```kotlin
 @Serializable
