@@ -12,6 +12,8 @@ See https://blog.csdn.net/jiange_zh/article/details/86562232
 
 Latest stable version is `1.0.0`.
 
+This library is multiplatform, supporting JVM and JS.
+
 #### Gradle
 Replace `<version>` with the newest version here: [![Download](https://api.bintray.com/packages/him188moe/jcekt/jcekt/images/download.svg)](https://bintray.com/him188moe/jcekt/jcekt/)
 
@@ -23,7 +25,10 @@ repositories {
 
 ```kotlin
 dependencies {
-  implementation("moe.him188:jcekt:<version>")
+  // choose one of them depending on your platform
+  implementation("moe.him188:jcekt:<version>") // JVM
+  implementation("moe.him188:jcekt-common:<version>") // common
+  implementation("moe.him188:jcekt-js:<version>") // JS
 }
 ```
 
