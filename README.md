@@ -1,4 +1,7 @@
 # JceKt
+![Gradle CI](https://github.com/him188/jcekt/workflows/Gradle%20CI/badge.svg?branch=master)
+[![Download](https://api.bintray.com/packages/him188moe/jcekt/jcekt/images/download.svg)](https://bintray.com/him188moe/jcekt/jcekt/)
+
 JCE protocol support for kotlinx.serialization
 
 ### What is JCE?
