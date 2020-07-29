@@ -15,10 +15,15 @@ import kotlinx.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapEntrySerializer
 import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.internal.MapLikeSerializer
 import kotlinx.serialization.internal.TaggedEncoder
-import kotlinx.serialization.modules.EmptyModule
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 import moe.him188.jcekt.Jce.Companion.BYTE
 import moe.him188.jcekt.Jce.Companion.DOUBLE
 import moe.him188.jcekt.Jce.Companion.FLOAT
@@ -47,9 +52,9 @@ internal inline fun <reified A : Annotation> SerialDescriptor.findAnnotation(ele
 
 internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<JceId>(index)?.id
 
-@Suppress("DEPRECATION_ERROR")
+//@Suppress("DEPRECATION_ERROR")
 @OptIn(InternalSerializationApi::class)
-internal class JceOld internal constructor(private val charset: Charset, override val context: SerialModule = EmptyModule) :
+internal class JceOld internal constructor(private val charset: Charset, override val serializersModule: SerializersModule = EmptySerializersModule) :
     SerialFormat, BinaryFormat {
 
     private inner class ListWriter(
@@ -107,7 +112,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
     private open inner class JceEncoder(
         val output: BytePacketBuilder
     ) : TaggedEncoder<Int>() {
-        override val context get() = this@JceOld.context
+        override val serializersModule get() = this@JceOld.serializersModule
 
         override fun SerialDescriptor.getTag(index: Int): Int {
             return getSerialId(this, index) ?: error("cannot find @SerialId")
@@ -117,8 +122,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
          * 序列化最开始的时候的
          */
         override fun beginStructure(
-            descriptor: SerialDescriptor,
-            vararg typeSerializers: KSerializer<*>
+            descriptor: SerialDescriptor
         ): CompositeEncoder =
             when (descriptor.kind) {
                 StructureKind.LIST -> this
@@ -128,7 +132,6 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
                 else -> throw SerializationException("Primitives are not supported at top-level")
             }
 
-        @OptIn(ImplicitReflectionSerializer::class)
         @Suppress("UNCHECKED_CAST", "NAME_SHADOWING")
         override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) = when {
             serializer.descriptor.kind == StructureKind.MAP -> {
@@ -194,7 +197,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             }
         }
 
-        override fun encodeTaggedByte(tag: Int, value: Byte) {
+        public override fun encodeTaggedByte(tag: Int, value: Byte) {
             if (value.toInt() == 0) {
                 writeHead(ZERO_TYPE, tag)
             } else {
@@ -203,7 +206,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             }
         }
 
-        override fun encodeTaggedShort(tag: Int, value: Short) {
+        public override fun encodeTaggedShort(tag: Int, value: Short) {
             if (value in Byte.MIN_VALUE..Byte.MAX_VALUE) {
                 encodeTaggedByte(tag, value.toByte())
             } else {
@@ -212,7 +215,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             }
         }
 
-        override fun encodeTaggedInt(tag: Int, value: Int) {
+        public override fun encodeTaggedInt(tag: Int, value: Int) {
             if (value in Short.MIN_VALUE..Short.MAX_VALUE) {
                 encodeTaggedShort(tag, value.toShort())
             } else {
@@ -221,17 +224,17 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             }
         }
 
-        override fun encodeTaggedFloat(tag: Int, value: Float) {
+        public override fun encodeTaggedFloat(tag: Int, value: Float) {
             writeHead(FLOAT, tag)
             output.writeFloat(value)
         }
 
-        override fun encodeTaggedDouble(tag: Int, value: Double) {
+        public override fun encodeTaggedDouble(tag: Int, value: Double) {
             writeHead(DOUBLE, tag)
             output.writeDouble(value)
         }
 
-        override fun encodeTaggedLong(tag: Int, value: Long) {
+        public override fun encodeTaggedLong(tag: Int, value: Long) {
             if (value in Int.MIN_VALUE..Int.MAX_VALUE) {
                 encodeTaggedInt(tag, value.toInt())
             } else {
@@ -240,19 +243,19 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             }
         }
 
-        override fun encodeTaggedBoolean(tag: Int, value: Boolean) {
+        public override fun encodeTaggedBoolean(tag: Int, value: Boolean) {
             encodeTaggedByte(tag, if (value) 1 else 0)
         }
 
-        override fun encodeTaggedChar(tag: Int, value: Char) {
+        public override fun encodeTaggedChar(tag: Int, value: Char) {
             encodeTaggedByte(tag, value.toByte())
         }
 
-        override fun encodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor, ordinal: Int) {
+        public override fun encodeTaggedEnum(tag: Int, enumDescription: SerialDescriptor, ordinal: Int) {
             encodeTaggedInt(tag, ordinal)
         }
 
-        override fun encodeTaggedNull(tag: Int) {
+        public override fun encodeTaggedNull(tag: Int) {
         }
 
         fun encodeTaggedByteArray(tag: Int, bytes: ByteArray) {
@@ -262,7 +265,7 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
             output.writeFully(bytes)
         }
 
-        override fun encodeTaggedString(tag: Int, value: String) {
+        public override fun encodeTaggedString(tag: Int, value: String) {
             require(value.length <= JCE_MAX_STRING_LENGTH) { "string is too long for tag $tag" }
             val array = value.toByteArray(charset)
             if (array.size > 255) {
@@ -317,15 +320,15 @@ internal class JceOld internal constructor(private val charset: Charset, overrid
     fun <T> dumpAsPacket(serializer: SerializationStrategy<T>, obj: T): ByteReadPacket {
         val encoder = BytePacketBuilder()
         val dumper = JceEncoder(encoder)
-        dumper.encode(serializer, obj)
+        dumper.encodeSerializableValue(serializer, obj)
         return encoder.build()
     }
 
-    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+    override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
         return dumpAsPacket(serializer, value).readBytes()
     }
 
-    override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
+    override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
         error("Use JceNew.")
     }
 }

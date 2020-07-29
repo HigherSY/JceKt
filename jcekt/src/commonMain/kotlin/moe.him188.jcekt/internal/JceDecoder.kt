@@ -11,21 +11,20 @@
 
 package moe.him188.jcekt.internal
 
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.AbstractDecoder
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.encoding.AbstractDecoder
+import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.internal.TaggedDecoder
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.SerializersModule
 import moe.him188.jcekt.Jce
 import moe.him188.jcekt.JceId
 
 
 @OptIn(InternalSerializationApi::class)
 internal class JceDecoder(
-    val jce: JceInput, override val context: SerialModule
+    val jce: JceInput, override val serializersModule: SerializersModule
 ) : TaggedDecoder<JceTag>() {
-    override val updateMode: UpdateMode
-        get() = UpdateMode.BANNED
-
     override fun SerialDescriptor.getTag(index: Int): JceTag {
         val annotations = this.getElementAnnotations(index)
 
@@ -53,9 +52,9 @@ internal class JceDecoder(
             this@JceDecoder.endStructure(descriptor)
         }
 
-        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
             this@JceDecoder.pushTag(JceTagListElement)
-            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+            return this@JceDecoder.beginStructure(descriptor)
         }
 
         override fun decodeByte(): Byte = jce.input.readByte()
@@ -88,10 +87,10 @@ internal class JceDecoder(
             this@JceDecoder.endStructure(descriptor)
         }
 
-        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
             this@JceDecoder.pushTag(JceTagListElement)
 
-            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+            return this@JceDecoder.beginStructure(descriptor)
         }
 
         override fun decodeByte(): Byte = jce.useHead { jce.readJceByteValue(it) }
@@ -123,7 +122,7 @@ internal class JceDecoder(
             this@JceDecoder.endStructure(descriptor)
         }
 
-        override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
             println { "MapReader.beginStructure: ${jce.currentHead}" }
             this@JceDecoder.pushTag(
                 when (jce.currentHead.tag) {
@@ -132,7 +131,7 @@ internal class JceDecoder(
                     else -> error("illegal map entry head: ${jce.currentHead.tag}")
                 }
             )
-            return this@JceDecoder.beginStructure(descriptor, *typeParams)
+            return this@JceDecoder.beginStructure(descriptor)
         }
 
         override fun decodeByte(): Byte = jce.useHead { jce.readJceByteValue(it) }
@@ -203,7 +202,7 @@ internal class JceDecoder(
         }
     }
 
-    override fun beginStructure(descriptor: SerialDescriptor, vararg typeParams: KSerializer<*>): CompositeDecoder {
+    override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         println()
         println { "beginStructure: ${descriptor.serialName}" }
         structureHierarchy++
@@ -255,8 +254,9 @@ internal class JceDecoder(
             }
 
             StructureKind.OBJECT -> error("unsupported StructureKind.OBJECT: ${descriptor.serialName}")
-            is UnionKind -> error("unsupported UnionKind: ${descriptor.serialName}")
+            is SerialKind.ENUM -> error("unsupported UnionKind: ${descriptor.serialName}")
             is PolymorphicKind -> error("unsupported PolymorphicKind: ${descriptor.serialName}")
+            is SerialKind.CONTEXTUAL -> error("unsupported PolymorphicKind: ${descriptor.serialName}")
         }
     }
 
@@ -264,14 +264,14 @@ internal class JceDecoder(
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         var jceHead = jce.currentHeadOrNull ?: kotlin.run {
             println("decodeElementIndex: currentHead == null")
-            return CompositeDecoder.READ_DONE
+            return CompositeDecoder.DECODE_DONE
         }
 
         println { "decodeElementIndex: ${jce.currentHead}" }
         while (!jce.input.endOfInput) {
             if (jceHead.type == Jce.STRUCT_END) {
                 println { "decodeElementIndex: ${jce.currentHead}" }
-                return CompositeDecoder.READ_DONE
+                return CompositeDecoder.DECODE_DONE
             }
 
             repeat(descriptor.elementsCount) {
@@ -295,7 +295,7 @@ internal class JceDecoder(
             println { "next! $jceHead" }
         }
 
-        return CompositeDecoder.READ_DONE // optional support
+        return CompositeDecoder.DECODE_DONE // optional support
     }
 
     override fun decodeTaggedInt(tag: JceTag): Int =

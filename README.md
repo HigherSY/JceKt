@@ -13,7 +13,8 @@ See https://blog.csdn.net/jiange_zh/article/details/86562232
 
 ### Quick start
 
-Latest stable version is `1.0.0`.
+The Latest stable version is `1.0.0`, with kotlinx.serialization `0.20.0` and Kotlin `1.4.0-rc`.
+The Latest early-access version is `2.0.0-1.4.0-rc` with kotlinx.serialization `1.0-M1-1.4.0-rc` and Kotlin `1.4.0-rc`.
 
 This library is multiplatform, supporting JVM and JS.
 

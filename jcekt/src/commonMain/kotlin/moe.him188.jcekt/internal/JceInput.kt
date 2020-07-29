@@ -150,6 +150,9 @@ internal class JceInput(
                         nextHead()
                     }
                 }
+                if (count == 0) {
+
+                }
                 JceDecoder.structureHierarchy--
             }
             Jce.STRUCT_BEGIN -> {

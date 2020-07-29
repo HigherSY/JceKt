@@ -1,11 +1,11 @@
 object Versions {
     object JceKt {
-        const val version = "1.0.0"
+        const val version = "2.0.0-1.4.0-rc"
     }
 
     object Kotlin {
-        const val stdlib = "1.3.71"
-        const val serialization = "0.20.0"
+        const val stdlib = "1.4.0-rc"
+        const val serialization = "1.0-M1-1.4.0-rc"
 
         const val io = "0.1.16"
     }

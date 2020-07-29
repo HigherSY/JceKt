@@ -7,5 +7,5 @@ import kotlinx.serialization.SerialInfo
  */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
-annotation class JceId(val id: Int)
+public annotation class JceId(val id: Int)
 

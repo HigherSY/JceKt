@@ -6,8 +6,8 @@ import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
-import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import moe.him188.jcekt.internal.JceDecoder
 import moe.him188.jcekt.internal.JceInput
 import moe.him188.jcekt.internal.writeJceHead
@@ -51,8 +51,8 @@ internal class JceInputTest {
             @JceId(6) val friends: List<Account> = listOf() // nesting supported
         )
 
-        val bytes = Jce.UTF_8.dump(Account.serializer(), Account(1, "Alice", 20, listOf(Account(2, "Bob", 22))))
-        val account = Jce.UTF_8.load(Account.serializer(), bytes)
+        val bytes = Jce.UTF_8.encodeToByteArray(Account.serializer(), Account(1, "Alice", 20, listOf(Account(2, "Bob", 22))))
+        Jce.UTF_8.decodeFromByteArray(Account.serializer(), bytes)
     }
 
     @Test
@@ -93,7 +93,7 @@ internal class JceInputTest {
         )
         assertEquals(
             value.toString(),
-            jce.load(FriendInfo.serializer(), jce.dump(FriendInfo.serializer(), value)).toString()
+            jce.decodeFromByteArray(FriendInfo.serializer(), jce.encodeToByteArray(FriendInfo.serializer(), value)).toString()
         )
     }
 
@@ -534,7 +534,7 @@ internal class JceInputTest {
             writeShort(123)
         }
 
-        assertFailsWith<MissingFieldException> { jce.load(TestSerializableClassA.serializer(), input) }
+        assertFailsWith<SerializationException> { jce.load(TestSerializableClassA.serializer(), input) }
     }
 
     @Test

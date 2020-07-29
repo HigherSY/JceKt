@@ -10,7 +10,7 @@
 package moe.him188.jcekt.internal
 
 import kotlinx.io.core.Output
-import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import moe.him188.jcekt.Jce
 
 

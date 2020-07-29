@@ -17,8 +17,8 @@ import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.modules.EmptyModule
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 import moe.him188.jcekt.internal.JceDecoder
 import moe.him188.jcekt.internal.JceInput
 import moe.him188.jcekt.internal.JceOld
@@ -28,36 +28,36 @@ import kotlin.jvm.JvmStatic
 /**
  * The main entry point to work with JCE serialization.
  */
-class Jce(
-    override val context: SerialModule = EmptyModule,
-    val charset: Charset = Charsets.UTF_8
+public class Jce(
+    public override val serializersModule: SerializersModule = EmptySerializersModule,
+    public val charset: Charset = Charsets.UTF_8
 ) : SerialFormat, IOFormat, BinaryFormat {
     private val old = JceOld(charset)
 
-    override fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output) {
+    public override fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output) {
         output.writePacket(old.dumpAsPacket(serializer, ojb))
     }
 
-    override fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T {
+    public override fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T {
         return JceDecoder(
             JceInput(
                 input,
                 charset
-            ), context
+            ), serializersModule
         ).decodeSerializableValue(deserializer)
     }
 
-    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+    public override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
         return buildPacket { dumpTo(serializer, value, this) }.readBytes()
     }
 
-    override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
+    public override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
         return load(deserializer, ByteReadPacket(bytes))
     }
 
-    companion object {
+    public companion object {
         @JvmStatic
-        val UTF_8: Jce = Jce()
+        public val UTF_8: Jce = Jce()
 
         internal const val BYTE: Byte = 0
         internal const val DOUBLE: Byte = 5

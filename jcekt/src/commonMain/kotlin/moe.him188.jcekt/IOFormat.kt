@@ -6,9 +6,12 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialFormat
 import kotlinx.serialization.SerializationStrategy
 
-interface IOFormat : SerialFormat {
+/**
+ * Unstable
+ */
+public interface IOFormat : SerialFormat {
 
-    fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output)
+    public fun <T> dumpTo(serializer: SerializationStrategy<T>, ojb: T, output: Output)
 
-    fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T
+    public fun <T> load(deserializer: DeserializationStrategy<T>, input: Input): T
 }
